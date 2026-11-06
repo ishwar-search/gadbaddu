@@ -1,1 +1,671 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#10101b">
+
+    <title>Gadbaddu - Social Community</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #10101b;
+            color: #f5f5fa;
+            font-family: Arial, sans-serif;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button, input {
+            font: inherit;
+        }
+
+        .navbar {
+            background: #191927;
+            border-bottom: 1px solid #303044;
+            padding: 15px 5%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            font-size: 27px;
+            font-weight: 900;
+            color: #c084fc;
+        }
+
+        .logo span {
+            color: #facc15;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #ddd;
+            font-size: 14px;
+        }
+
+        .nav-links a:hover {
+            color: #d8a5ff;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 6px;
+        }
+
+        .search-form input {
+            width: 190px;
+            padding: 9px 12px;
+            border: 1px solid #39394e;
+            border-radius: 20px;
+            background: #10101b;
+            color: white;
+            outline: none;
+        }
+
+        .search-form button,
+        .primary-btn {
+            background: #9333ea;
+            color: white;
+            border: none;
+            padding: 9px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .container {
+            max-width: 1050px;
+            margin: 30px auto;
+            padding: 0 16px;
+            display: grid;
+            grid-template-columns: 250px minmax(0, 600px);
+            gap: 25px;
+            justify-content: center;
+        }
+
+        .sidebar, .post-card, .welcome-card {
+            background: #191927;
+            border: 1px solid #303044;
+            border-radius: 16px;
+        }
+
+        .sidebar {
+            padding: 20px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .sidebar h3 {
+            color: #d8a5ff;
+            margin-bottom: 16px;
+        }
+
+        .side-link {
+            display: block;
+            padding: 12px 10px;
+            border-radius: 9px;
+            color: #ddd;
+            margin-bottom: 5px;
+        }
+
+        .side-link:hover {
+            background: #29243a;
+        }
+
+        .welcome-card {
+            padding: 20px;
+            margin-bottom: 20px;
+            background: linear-gradient(120deg, #30204b, #20203a);
+        }
+
+        .welcome-card h2 {
+            font-size: 23px;
+            margin-bottom: 8px;
+        }
+
+        .welcome-card p {
+            color: #c9c4d8;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .post-card {
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .avatar {
+            width: 43px;
+            height: 43px;
+            border-radius: 50%;
+            background: #7835b7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            overflow: hidden;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .username {
+            font-weight: bold;
+        }
+
+        .post-date {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 4px;
+        }
+
+        .post-caption {
+            padding: 0 16px 15px;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+
+        .post-media {
+            width: 100%;
+            max-height: 550px;
+            object-fit: contain;
+            display: block;
+            background: #080810;
+        }
+
+        .post-stats {
+            padding: 13px 16px;
+            color: #aaa;
+            font-size: 13px;
+            border-bottom: 1px solid #303044;
+        }
+
+        .post-actions {
+            padding: 12px 16px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: #29293a;
+            border: 1px solid #414157;
+            color: white;
+            padding: 9px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            background: #493064;
+        }
+
+        .comment-form {
+            padding: 0 16px 16px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .comment-form input {
+            flex: 1;
+            min-width: 0;
+            padding: 11px;
+            border-radius: 20px;
+            border: 1px solid #414157;
+            background: #10101b;
+            color: white;
+            outline: none;
+        }
+
+        .comment-form button {
+            background: #9333ea;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 0 15px;
+            cursor: pointer;
+        }
+
+        .report-form {
+            padding: 0 16px 15px;
+            text-align: right;
+        }
+
+        .report-form button {
+            color: #aaa;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .report-form button:hover {
+            color: #ff7777;
+        }
+
+        .empty-state {
+            background: #191927;
+            border: 1px solid #303044;
+            border-radius: 16px;
+            text-align: center;
+            padding: 45px 20px;
+            color: #bbb;
+        }
+
+        .empty-state h2 {
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .flash {
+            max-width: 800px;
+            margin: 15px auto;
+            padding: 12px 16px;
+            border-radius: 10px;
+            background: #29243a;
+            border: 1px solid #62418a;
+        }
+
+        .footer {
+            text-align: center;
+            color: #888;
+            padding: 30px 15px;
+            font-size: 13px;
+        }
+
+        @media (max-width: 750px) {
+            .container {
+                display: block;
+                margin-top: 18px;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .navbar {
+                padding: 13px 4%;
+            }
+
+            .nav-links {
+                gap: 12px;
+            }
+
+            .search-form {
+                width: 100%;
+            }
+
+            .search-form input {
+                flex: 1;
+                width: auto;
+            }
+
+            .welcome-card h2 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+    <header class="navbar">
+
+        <a href="{{ url_for('index') }}" class="logo">
+            Gadbad<span>du</span>
+        </a>
+
+        <nav class="nav-links">
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('explore') }}">Explore</a>
+
+            {% if user %}
+                <a href="{{ url_for('upload') }}">Create Post</a>
+                <a href="{{ url_for('messages') }}">Messages</a>
+                <a href="{{ url_for('my_profile') }}">Profile</a>
+                <a href="{{ url_for('logout') }}">Logout</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Login</a>
+                <a href="{{ url_for('register') }}">Register</a>
+            {% endif %}
+        </nav>
+
+        <form class="search-form" action="{{ url_for('explore') }}" method="GET">
+            <input
+                type="search"
+                name="q"
+                placeholder="Search Gadbaddu..."
+                aria-label="Search"
+            >
+            <button type="submit">Search</button>
+        </form>
+
+    </header>
+
+
+    <!-- FLASH MESSAGES -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+
+    <!-- MAIN CONTENT -->
+    <main class="container">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+
+            <h3>Gadbaddu Menu</h3>
+
+            <a class="side-link" href="{{ url_for('index') }}">
+                🏠 Home Feed
+            </a>
+
+            <a class="side-link" href="{{ url_for('explore') }}">
+                🔍 Explore
+            </a>
+
+            {% if user %}
+                <a class="side-link" href="{{ url_for('my_profile') }}">
+                    👤 My Profile
+                </a>
+
+                <a class="side-link" href="{{ url_for('upload') }}">
+                    ➕ Create Post
+                </a>
+
+                <a class="side-link" href="{{ url_for('messages') }}">
+                    💬 Messages
+                </a>
+
+                <a class="side-link" href="{{ url_for('referrals') }}">
+                    🎁 My Referrals
+                </a>
+            {% else %}
+                <a class="side-link" href="{{ url_for('login') }}">
+                    🔐 Login
+                </a>
+
+                <a class="side-link" href="{{ url_for('register') }}">
+                    ✨ Join Gadbaddu
+                </a>
+            {% endif %}
+
+        </aside>
+
+
+        <!-- FEED -->
+        <section class="feed">
+
+            <div class="welcome-card">
+                {% if user %}
+                    <h2>Welcome back, @{{ user.username }}! 👋</h2>
+                    <p>
+                        Share your moments, discover new people
+                        and enjoy the Gadbaddu community.
+                    </p>
+                {% else %}
+                    <h2>Welcome to Gadbaddu! 🎉</h2>
+                    <p>
+                        A place to share ideas, discover content
+                        and connect with people.
+                    </p>
+
+                    <br>
+
+                    <a class="primary-btn" href="{{ url_for('register') }}">
+                        Join Gadbaddu
+                    </a>
+                {% endif %}
+            </div>
+
+
+            <!-- POSTS -->
+            {% if posts %}
+
+                {% for post in posts %}
+
+                    <article class="post-card">
+
+                        <!-- POST HEADER -->
+                        <div class="post-header">
+
+                            <div class="avatar">
+                                {% if post.avatar %}
+                                    <img
+                                        src="{{ url_for('static', filename=post.avatar) }}"
+                                        alt="Profile picture"
+                                    >
+                                {% else %}
+                                    {{ post.username[0]|upper }}
+                                {% endif %}
+                            </div>
+
+                            <div>
+                                <a
+                                    class="username"
+                                    href="{{ url_for('profile', username=post.username) }}"
+                                >
+                                    @{{ post.username }}
+                                </a>
+
+                                <div class="post-date">
+                                    {{ post.created_at }}
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <!-- CAPTION -->
+                        {% if post.caption %}
+                            <div class="post-caption">
+                                {{ post.caption }}
+                            </div>
+                        {% endif %}
+
+
+                        <!-- IMAGE / VIDEO -->
+                        {% if post.media_type == "image" %}
+
+                            <img
+                                class="post-media"
+                                src="{{ url_for('static', filename='uploads/' ~ post.media) }}"
+                                alt="Gadbaddu post"
+                                loading="lazy"
+                            >
+
+                        {% elif post.media_type == "video" %}
+
+                            <video
+                                class="post-media"
+                                controls
+                                preload="metadata"
+                                playsinline
+                            >
+                                <source
+                                    src="{{ url_for('static', filename='uploads/' ~ post.media) }}"
+                                >
+                                Your browser does not support video.
+                            </video>
+
+                        {% endif %}
+
+
+                        <!-- POST COUNTS -->
+                        <div class="post-stats">
+                            ❤️ {{ post.like_count }} Likes
+                            &nbsp; · &nbsp;
+                            💬 {{ post.comment_count }} Comments
+                        </div>
+
+
+                        <!-- POST ACTIONS -->
+                        <div class="post-actions">
+
+                            {% if user %}
+
+                                <form
+                                    action="{{ url_for('like', post_id=post.id) }}"
+                                    method="POST"
+                                >
+                                    <button class="action-btn" type="submit">
+                                        ❤️ Like
+                                    </button>
+                                </form>
+
+                                <button
+                                    class="action-btn"
+                                    type="button"
+                                    onclick="document.getElementById('comment-{{ post.id }}').focus()"
+                                >
+                                    💬 Comment
+                                </button>
+
+                            {% else %}
+
+                                <a class="action-btn" href="{{ url_for('login') }}">
+                                    ❤️ Login to Like
+                                </a>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- COMMENT FORM -->
+                        {% if user %}
+
+                            <form
+                                class="comment-form"
+                                action="{{ url_for('comment', post_id=post.id) }}"
+                                method="POST"
+                            >
+
+                                <input
+                                    id="comment-{{ post.id }}"
+                                    type="text"
+                                    name="comment"
+                                    placeholder="Write a comment..."
+                                    maxlength="1000"
+                                    required
+                                >
+
+                                <button type="submit">
+                                    Send
+                                </button>
+
+                            </form>
+
+                        {% endif %}
+
+
+                        <!-- REPORT POST -->
+                        {% if user and user.id != post.user_id %}
+
+                            <form
+                                class="report-form"
+                                action="{{ url_for('report_post', post_id=post.id) }}"
+                                method="POST"
+                            >
+                                <input
+                                    type="hidden"
+                                    name="reason"
+                                    value="Reported by user"
+                                >
+
+                                <button type="submit">
+                                    Report Post
+                                </button>
+                            </form>
+
+                        {% endif %}
+
+                    </article>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="empty-state">
+
+                    <h2>No Posts Yet! 📭</h2>
+
+                    <p>
+                        Be the first person to share something
+                        with the Gadbaddu community.
+                    </p>
+
+                    {% if user %}
+                        <br>
+
+                        <a class="primary-btn" href="{{ url_for('upload') }}">
+                            Create Your First Post
+                        </a>
+                    {% else %}
+                        <br>
+
+                        <a class="primary-btn" href="{{ url_for('register') }}">
+                            Create Account
+                        </a>
+                    {% endif %}
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <p>© 2026 Gadbaddu. All rights reserved.</p>
+        <p>Connect • Share • Discover</p>
+        <p>Search Smarter, Live Better.</p>
+    </footer>
+
+</body>
+</html>
+
