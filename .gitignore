@@ -1,0 +1,32 @@
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Environment variables and secrets
+.env
+.env.*
+
+# Database
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# User uploads - do not store in GitHub
+static/uploads/*
+!static/uploads/.gitkeep
+
+# Editor files
+.vscode/
+.idea/
+
+# Operating system
+.DS_Store
+Thumbs.db
