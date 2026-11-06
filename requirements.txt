@@ -1,8 +1,3 @@
-Flask
-Flask-SQLAlchemy
-Flask-Login
-Flask-WTF
-Werkzeug
-gunicorn
-python-dotenv
-Pillow
+
+Flask>=3.1,<4.0
+gunicorn>=23.0,<24.0
