@@ -1,1 +1,59 @@
+{% extends "base.html" %}
 
+{% block title %}Terms & Conditions | Gadbaddu{% endblock %}
+
+{% block content %}
+<section class="legal-container">
+
+    <h1>Terms & Conditions</h1>
+    <p class="updated">Last updated: November 2026</p>
+
+    <h2>1. About Gadbaddu</h2>
+    <p>Gadbaddu is a platform for sharing and watching short videos.</p>
+
+    <h2>2. User Accounts</h2>
+    <p>Users must provide accurate information when creating an account and must protect their login credentials.</p>
+
+    <h2>3. User Content</h2>
+    <p>Users are responsible for the videos, comments and other content they upload or share.</p>
+
+    <h2>4. Prohibited Content</h2>
+    <p>Do not upload illegal, harmful, threatening, abusive or misleading content. Do not violate another person's privacy or intellectual property rights.</p>
+
+    <h2>5. Safety and Reporting</h2>
+    <p>Users can report content that they believe violates platform rules. Gadbaddu may review reported content and take appropriate action.</p>
+
+    <h2>6. Account Restrictions</h2>
+    <p>Accounts that repeatedly violate platform rules may be restricted or suspended.</p>
+
+    <h2>7. Changes</h2>
+    <p>These terms may be updated as the platform develops. The latest version will be published on this page.</p>
+
+    <h2>8. Contact</h2>
+    <p>For questions about these terms, contact the Gadbaddu team through the official support channel once it is available.</p>
+
+</section>
+
+<style>
+.legal-container {
+    max-width: 850px;
+    margin: 30px auto;
+    padding: 25px;
+    color: white;
+    line-height: 1.8;
+}
+.legal-container h1 {
+    font-size: 30px;
+}
+.legal-container h2 {
+    margin-top: 28px;
+    color: #ff55a5;
+}
+.legal-container p {
+    color: #ccc;
+}
+.updated {
+    color: #999 !important;
+}
+</style>
+{% endblock %}
