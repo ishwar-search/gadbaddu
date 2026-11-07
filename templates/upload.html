@@ -1,1 +1,147 @@
 
+{% extends "base.html" %}
+
+{% block title %}Upload | Gadbaddu{% endblock %}
+
+{% block content %}
+
+<style>
+.upload-page{max-width:620px;margin:35px auto;padding:16px;color:white}
+.upload-box{padding:25px;background:#191722;border:1px solid #302b3c;border-radius:18px}
+.upload-box h2{text-align:center;margin-top:0}
+.upload-subtitle{text-align:center;color:#aaa;margin-bottom:25px}
+.upload-label{display:block;margin:17px 0 8px;font-weight:bold}
+.upload-input,.upload-caption{width:100%;box-sizing:border-box;padding:13px;background:#100f16;color:white;border:1px solid #393545;border-radius:9px}
+.upload-caption{resize:vertical;min-height:110px}
+.upload-help{font-size:12px;color:#999;line-height:1.6}
+.preview-box{display:none;margin-top:15px;background:#100f16;border-radius:12px;padding:10px;text-align:center}
+.preview-box img,.preview-box video{max-width:100%;max-height:380px;border-radius:9px}
+.publish-btn{width:100%;margin-top:20px;padding:14px;background:linear-gradient(110deg,#ff2e88,#813cff);border:0;border-radius:9px;color:white;font-size:16px;font-weight:bold;cursor:pointer}
+.publish-btn:disabled{opacity:.5;cursor:not-allowed}
+.upload-back{display:block;text-align:center;margin-top:18px;color:#ff65a7;text-decoration:none}
+</style>
+
+<div class="upload-page">
+
+    <div class="upload-box">
+
+        <h2>🎬 Create a Post</h2>
+
+        <p class="upload-subtitle">
+            Share your moments with the Gadbaddu community.
+        </p>
+
+        <form
+            id="uploadForm"
+            method="POST"
+            action="{{ url_for('upload') }}"
+            enctype="multipart/form-data">
+
+            <label class="upload-label" for="media">
+                Select Photo or Video
+            </label>
+
+            <input
+                class="upload-input"
+                type="file"
+                id="media"
+                name="media"
+                accept=".png,.jpg,.jpeg,.gif,.webp,.mp4,.webm,.mov,image/png,image/jpeg,image/gif,image/webp,video/mp4,video/webm,video/quicktime"
+                required>
+
+            <p class="upload-help">
+                Supported: PNG, JPG, JPEG, GIF, WEBP, MP4, WEBM and MOV.
+                Maximum file size: 25 MB.
+            </p>
+
+            <div class="preview-box" id="previewBox">
+                <p>Media Preview</p>
+                <img id="imagePreview" alt="Selected image preview" style="display:none">
+                <video id="videoPreview" controls playsinline style="display:none"></video>
+            </div>
+
+            <label class="upload-label" for="caption">
+                Caption
+            </label>
+
+            <textarea
+                class="upload-caption"
+                id="caption"
+                name="caption"
+                maxlength="2000"
+                placeholder="Write something about your post..."></textarea>
+
+            <p class="upload-help">
+                Maximum 2000 characters.
+            </p>
+
+            <button class="publish-btn" id="publishButton" type="submit">
+                🚀 Publish Post
+            </button>
+
+        </form>
+
+        <a class="upload-back" href="{{ url_for('index') }}">
+            ← Back to Home
+        </a>
+
+    </div>
+
+</div>
+
+<script>
+(function () {
+    const fileInput = document.getElementById("media");
+    const previewBox = document.getElementById("previewBox");
+    const imagePreview = document.getElementById("imagePreview");
+    const videoPreview = document.getElementById("videoPreview");
+    const form = document.getElementById("uploadForm");
+    const publishButton = document.getElementById("publishButton");
+
+    let previewUrl = null;
+
+    fileInput.addEventListener("change", function () {
+        const file = fileInput.files[0];
+
+        imagePreview.style.display = "none";
+        videoPreview.style.display = "none";
+        previewBox.style.display = "none";
+
+        if (previewUrl) {
+            URL.revokeObjectURL(previewUrl);
+            previewUrl = null;
+        }
+
+        if (!file) return;
+
+        if (file.size > 25 * 1024 * 1024) {
+            alert("File size must be 25 MB or less.");
+            fileInput.value = "";
+            return;
+        }
+
+        previewUrl = URL.createObjectURL(file);
+        previewBox.style.display = "block";
+
+        if (file.type.startsWith("image/")) {
+            imagePreview.src = previewUrl;
+            imagePreview.style.display = "inline-block";
+        } else if (file.type.startsWith("video/")) {
+            videoPreview.src = previewUrl;
+            videoPreview.style.display = "inline-block";
+        } else {
+            alert("Please select a supported image or video.");
+            fileInput.value = "";
+            previewBox.style.display = "none";
+        }
+    });
+
+    form.addEventListener("submit", function () {
+        publishButton.disabled = true;
+        publishButton.textContent = "Publishing...";
+    });
+})();
+</script>
+
+{% endblock %}
+
