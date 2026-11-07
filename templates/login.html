@@ -1,1 +1,150 @@
 
+{% extends "base.html" %}
+
+{% block title %}Login | Gadbaddu{% endblock %}
+
+{% block content %}
+
+<style>
+.login-container {
+    max-width: 430px;
+    margin: 55px auto;
+    padding: 30px 24px;
+    background: #191722;
+    color: #fff;
+    border-radius: 18px;
+    box-sizing: border-box;
+}
+
+.login-logo {
+    text-align: center;
+    font-size: 48px;
+}
+
+.login-container h2 {
+    text-align: center;
+    margin: 8px 0;
+}
+
+.login-subtitle {
+    text-align: center;
+    color: #aaa;
+    margin-bottom: 25px;
+}
+
+.login-form label {
+    display: block;
+    margin: 14px 0 7px;
+    font-size: 14px;
+    color: #ddd;
+}
+
+.login-form input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px;
+    border: 1px solid #393545;
+    border-radius: 9px;
+    background: #0e0d14;
+    color: #fff;
+    outline: none;
+}
+
+.login-form input:focus {
+    border-color: #ff2e88;
+}
+
+.login-button {
+    width: 100%;
+    margin-top: 22px;
+    padding: 14px;
+    border: none;
+    border-radius: 9px;
+    background: linear-gradient(110deg, #ff2e88, #813cff);
+    color: #fff;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.login-links {
+    text-align: center;
+    margin-top: 20px;
+    color: #aaa;
+    line-height: 2;
+}
+
+.login-links a {
+    color: #ff65a7;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+@media (max-width: 500px) {
+    .login-container {
+        margin: 25px 12px;
+        padding: 25px 18px;
+    }
+}
+</style>
+
+<div class="login-container">
+
+    <div class="login-logo">😂</div>
+
+    <h2>Welcome Back!</h2>
+
+    <p class="login-subtitle">
+        Login to your Gadbaddu account
+    </p>
+
+    <form
+        class="login-form"
+        method="POST"
+        action="{{ url_for('login') }}">
+
+        <label for="username">Username or Email</label>
+
+        <input
+            type="text"
+            id="username"
+            name="username"
+            placeholder="Enter username or email"
+            required
+            autocomplete="username">
+
+        <label for="password">Password</label>
+
+        <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Enter your password"
+            required
+            autocomplete="current-password">
+
+        <button type="submit" class="login-button">
+            Login to Gadbaddu
+        </button>
+
+    </form>
+
+    <div class="login-links">
+
+        <p>
+            Don't have an account?
+            <a href="{{ url_for('register') }}">Create Account</a>
+        </p>
+
+        <p>
+            <a href="{{ url_for('index') }}">
+                Continue as Guest
+            </a>
+        </p>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
