@@ -20,7 +20,7 @@
     display: flex;
     justify-content: center;
     gap: 28px;
-    padding: 16px 10px;
+    padding: 14px 10px;
     background: rgba(12, 12, 18, .95);
     backdrop-filter: blur(12px);
 }
@@ -81,6 +81,7 @@
 .creator-info {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 12px;
     margin-bottom: 12px;
 }
@@ -88,7 +89,6 @@
 .creator-info a {
     color: #fff;
     font-weight: 800;
-    text-decoration: none;
 }
 
 .follow-small {
@@ -98,7 +98,6 @@
     color: #fff;
     background: #ff2e88;
     font-weight: 700;
-    text-decoration: none;
     cursor: pointer;
 }
 
@@ -112,6 +111,7 @@
     color: #ffd84d;
     font-size: 13px;
     font-weight: 700;
+    margin-top: 5px;
 }
 
 .video-actions {
@@ -157,7 +157,28 @@
     display: grid;
     place-items: center;
     font-size: 23px;
-    text-decoration: none;
+}
+
+.comment-mini {
+    position: absolute;
+    z-index: 6;
+    right: 75px;
+    bottom: 25px;
+    width: min(260px, 65%);
+}
+
+.comment-mini input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgba(255,255,255,.35);
+    border-radius: 20px;
+    background: rgba(0,0,0,.55);
+    color: white;
+    outline: none;
+}
+
+.comment-mini button {
+    display: none;
 }
 
 .video-progress {
@@ -190,6 +211,7 @@
 
 .empty-feed p {
     color: #aaa;
+    line-height: 1.5;
 }
 
 .primary-btn {
@@ -199,7 +221,6 @@
     border-radius: 9px;
     background: linear-gradient(110deg, #ff2e88, #813cff);
     color: #fff;
-    text-decoration: none;
     font-weight: 800;
 }
 
@@ -219,8 +240,11 @@
     animation: logo-pop .7s ease;
 }
 
-.splash-emoji {
-    font-size: 75px;
+.splash-logo img {
+    width: 95px;
+    height: 95px;
+    object-fit: contain;
+    border-radius: 22px;
 }
 
 .splash-logo h1 {
@@ -229,6 +253,7 @@
     font-weight: 900;
     background: linear-gradient(90deg, #ffcf36, #ff2e88, #a35bff);
     -webkit-background-clip: text;
+    background-clip: text;
     color: transparent;
 }
 
@@ -272,21 +297,40 @@
 }
 </style>
 
+<!-- SPLASH SCREEN -->
 <div class="splash-screen" id="splashScreen">
     <div class="splash-logo">
-        <div class="splash-emoji">😂</div>
+
+        <img
+            src="{{ url_for('static', filename='images/logo.png') }}"
+            alt="Gadbaddu Logo"
+            onerror="this.style.display='none'"
+        >
+
         <h1>Gadbaddu</h1>
         <p>ENTERTAINMENT UNLIMITED</p>
+
     </div>
 </div>
 
+
 <section class="feed-page">
 
+    <!-- FEED TABS -->
     <nav class="feed-tabs">
-        <a href="{{ url_for('index') }}" class="active">For You</a>
-        <a href="{{ url_for('index') }}#following">Following</a>
-        <a href="{{ url_for('explore') }}">Trending</a>
+        <a href="{{ url_for('index') }}" class="active">
+            For You
+        </a>
+
+        <a href="{{ url_for('index') }}#following">
+            Following
+        </a>
+
+        <a href="{{ url_for('explore') }}">
+            Trending 🔥
+        </a>
     </nav>
+
 
     {% if posts %}
 
@@ -296,13 +340,14 @@
 
         <article class="feed-item">
 
+            <!-- MEDIA -->
             <div class="feed-media">
 
                 {% if post.media_type == 'video' %}
 
                 <video
                     class="feed-video"
-                    src="{{ url_for('static', filename='uploads/' ~ post.filename) }}"
+                    src="{{ url_for('static', filename='uploads/' ~ post.media) }}"
                     loop
                     muted
                     playsinline
@@ -313,7 +358,7 @@
 
                 <img
                     class="feed-video"
-                    src="{{ url_for('static', filename='uploads/' ~ post.filename) }}"
+                    src="{{ url_for('static', filename='uploads/' ~ post.media) }}"
                     alt="Gadbaddu post"
                     loading="lazy">
 
@@ -321,6 +366,8 @@
 
             </div>
 
+
+            <!-- CREATOR DETAILS -->
             <div class="video-details">
 
                 <div class="creator-info">
@@ -333,8 +380,7 @@
 
                     <form
                         method="POST"
-                        action="{{ url_for('follow', username=post.username) }}"
-                        data-follow-form>
+                        action="{{ url_for('follow', username=post.username) }}">
 
                         <button type="submit" class="follow-small">
                             Follow
@@ -344,7 +390,9 @@
 
                     {% elif not user %}
 
-                    <a href="{{ url_for('login') }}" class="follow-small">
+                    <a
+                        href="{{ url_for('login', next=request.path) }}"
+                        class="follow-small">
                         Follow
                     </a>
 
@@ -353,33 +401,66 @@
                 </div>
 
                 <p class="video-caption">{{ post.caption }}</p>
-                <p class="video-tag">#Gadbaddu #ForYou</p>
+
+                <p class="video-tag">
+                    #Gadbaddu #ForYou
+                </p>
 
             </div>
 
+
+            <!-- VIDEO ACTIONS -->
             <div class="video-actions">
+
+                <!-- LIKE -->
+                {% if user %}
 
                 <form
                     method="POST"
                     action="{{ url_for('like', post_id=post.id) }}">
 
-                    <button
-                        type="submit"
-                        class="video-action"
-                        data-login-required>
+                    <button type="submit" class="video-action">
                         ❤️
-                        <span>{{ post.likes }} Likes</span>
+                        <span>{{ post.like_count }} Likes</span>
                     </button>
 
                 </form>
 
+                {% else %}
+
                 <a
-                    href="{{ url_for('profile', username=post.username) }}"
+                    href="{{ url_for('login', next=request.path) }}"
                     class="video-action">
-                    💬
-                    <span>Comments</span>
+                    ❤️
+                    <span>{{ post.like_count }} Likes</span>
                 </a>
 
+                {% endif %}
+
+
+                <!-- COMMENTS -->
+                {% if user %}
+
+                <a
+                    href="#comment-{{ post.id }}"
+                    class="video-action">
+                    💬
+                    <span>{{ post.comment_count }} Comments</span>
+                </a>
+
+                {% else %}
+
+                <a
+                    href="{{ url_for('login', next=request.path) }}"
+                    class="video-action">
+                    💬
+                    <span>{{ post.comment_count }} Comments</span>
+                </a>
+
+                {% endif %}
+
+
+                <!-- SHARE -->
                 <button
                     type="button"
                     class="video-action"
@@ -388,6 +469,8 @@
                     <span>Share</span>
                 </button>
 
+
+                <!-- CREATOR PROFILE -->
                 <a
                     href="{{ url_for('profile', username=post.username) }}"
                     class="creator-avatar">
@@ -395,6 +478,31 @@
                 </a>
 
             </div>
+
+
+            <!-- COMMENT INPUT -->
+            {% if user %}
+
+            <form
+                class="comment-mini"
+                id="comment-{{ post.id }}"
+                method="POST"
+                action="{{ url_for('comment', post_id=post.id) }}">
+
+                <input
+                    type="text"
+                    name="comment"
+                    maxlength="1000"
+                    placeholder="Add a comment..."
+                    required
+                >
+
+                <button type="submit">Send</button>
+
+            </form>
+
+            {% endif %}
+
 
             <div class="video-progress"></div>
 
@@ -404,61 +512,29 @@
 
     </div>
 
+
     {% else %}
 
+    <!-- EMPTY FEED -->
     <div class="empty-feed">
 
         <div class="empty-icon">🎬</div>
 
         <h2>Welcome to Gadbaddu!</h2>
 
-        <p>Abhi koi video upload nahi hua hai.</p>
-
-        {% if user %}
+        <p>
+            Abhi koi video upload nahi hua hai.
+            Pehla video upload karke shuruaat karein!
+        </p>
 
         <a href="{{ url_for('upload') }}" class="primary-btn">
             + Upload First Video
         </a>
-
-        {% else %}
-
-        <a href="{{ url_for('login') }}" class="primary-btn">
-            Login to Upload
-        </a>
-
-        {% endif %}
 
     </div>
 
     {% endif %}
 
 </section>
-
-<script>
-(function () {
-    const splash = document.getElementById("splashScreen");
-
-    if (!splash) return;
-
-    try {
-        if (sessionStorage.getItem("gadbaddu_splash_seen")) {
-            splash.remove();
-            return;
-        }
-
-        sessionStorage.setItem("gadbaddu_splash_seen", "yes");
-    } catch (error) {
-        // Splash still works if session storage is unavailable.
-    }
-
-    setTimeout(function () {
-        splash.style.opacity = "0";
-
-        setTimeout(function () {
-            splash.remove();
-        }, 450);
-    }, 2500);
-})();
-</script>
 
 {% endblock %}
