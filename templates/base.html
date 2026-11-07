@@ -14,6 +14,7 @@
           href="{{ url_for('static', filename='css/style.css') }}">
 
     <link rel="icon"
+          type="image/png"
           href="{{ url_for('static', filename='images/logo.png') }}">
 
     <style>
@@ -51,7 +52,7 @@
         }
 
         .topbar {
-            height: 65px;
+            min-height: 65px;
             padding: 0 20px;
             display: flex;
             align-items: center;
@@ -66,14 +67,14 @@
         .brand {
             display: flex;
             align-items: center;
-            gap: 9px;
+            gap: 10px;
             font-size: 23px;
             font-weight: 900;
         }
 
         .brand img {
-            width: 38px;
-            height: 38px;
+            width: 40px;
+            height: 40px;
             object-fit: contain;
             border-radius: 50%;
         }
@@ -85,15 +86,17 @@
         .top-actions {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 22px;
         }
 
         .top-actions a {
             color: var(--muted);
             font-size: 14px;
+            transition: .2s;
         }
 
-        .top-actions a:hover {
+        .top-actions a:hover,
+        .top-actions a.active {
             color: var(--pink);
         }
 
@@ -148,9 +151,15 @@
             padding: 25px 10px;
         }
 
+        .footer a {
+            color: var(--pink);
+            margin: 0 7px;
+        }
+
         @media (max-width: 650px) {
             .topbar {
                 height: 58px;
+                min-height: 58px;
                 padding: 0 12px;
             }
 
@@ -164,7 +173,7 @@
             }
 
             .top-actions {
-                gap: 10px;
+                gap: 12px;
             }
 
             .top-actions a {
@@ -177,19 +186,20 @@
                 bottom: 0;
                 left: 0;
                 width: 100%;
-                height: 65px;
+                min-height: 65px;
                 background: #100c19;
                 border-top: 1px solid var(--border);
                 align-items: center;
                 justify-content: space-around;
                 z-index: 200;
-                padding-bottom: env(safe-area-inset-bottom);
+                padding: 5px 3px env(safe-area-inset-bottom);
             }
 
             .bottom-nav a {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
+                justify-content: center;
                 gap: 4px;
                 color: #aaa;
                 font-size: 11px;
@@ -203,6 +213,18 @@
             .bottom-nav a.active,
             .bottom-nav a:hover {
                 color: var(--pink);
+            }
+
+            .bottom-nav .upload-icon {
+                width: 42px;
+                height: 36px;
+                border-radius: 12px;
+                background: linear-gradient(100deg, var(--pink), var(--purple));
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 26px;
             }
 
             main {
@@ -228,6 +250,8 @@
             <img
                 src="{{ url_for('static', filename='images/logo.png') }}"
                 alt="Gadbaddu Logo"
+                width="40"
+                height="40"
                 onerror="this.style.display='none'"
             >
 
@@ -237,19 +261,20 @@
 
         </a>
 
+        <!-- PUBLIC NAVIGATION -->
         <nav class="top-actions">
 
-            <a href="{{ url_for('explore') }}">Explore</a>
+            <a href="{{ url_for('index') }}">Home</a>
+
+            <a href="{{ url_for('explore') }}"
+               class="{% if request.endpoint == 'explore' %}active{% endif %}">
+                Explore
+            </a>
 
             {% if user %}
                 <a href="{{ url_for('messages') }}">Messages</a>
                 <a href="{{ url_for('my_profile') }}">Profile</a>
                 <a href="{{ url_for('logout') }}">Logout</a>
-            {% else %}
-                <a href="{{ url_for('login') }}">Login</a>
-                <a href="{{ url_for('register') }}" class="primary-button">
-                    Join
-                </a>
             {% endif %}
 
         </nav>
@@ -257,7 +282,7 @@
     </header>
 
 
-    <!-- FLASH NOTIFICATIONS -->
+    <!-- FLASH MESSAGES -->
     <div class="flash-container">
 
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -273,7 +298,7 @@
     </div>
 
 
-    <!-- PAGE CONTENT -->
+    <!-- MAIN PAGE CONTENT -->
     <main>
         {% block content %}{% endblock %}
     </main>
@@ -294,17 +319,17 @@
             <span>Explore</span>
         </a>
 
-        <a href="{{ url_for('upload') if user else url_for('login') }}">
-            <span class="nav-icon">⊕</span>
+        <a href="{{ url_for('upload') }}">
+            <span class="nav-icon upload-icon">+</span>
             <span>Upload</span>
         </a>
 
-        <a href="{{ url_for('messages') if user else url_for('login') }}">
+        <a href="{{ url_for('messages') }}">
             <span class="nav-icon">♧</span>
             <span>Messages</span>
         </a>
 
-        <a href="{{ url_for('my_profile') if user else url_for('login') }}">
+        <a href="{{ url_for('my_profile') }}">
             <span class="nav-icon">♙</span>
             <span>Profile</span>
         </a>
@@ -312,11 +337,21 @@
     </nav>
 
 
+    <!-- FOOTER -->
     <footer class="footer">
-        © 2026 Gadbaddu. जहाँ मस्ती ही मस्ती है! 😂
+
+        <p>© 2026 Gadbaddu. जहाँ मस्ती ही मस्ती है! 😂</p>
+
+        <p style="margin-top:10px;">
+            <a href="/terms">Terms</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/settings">Settings</a>
+        </p>
+
     </footer>
 
 
+    <!-- JAVASCRIPT -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
     {% block scripts %}{% endblock %}
