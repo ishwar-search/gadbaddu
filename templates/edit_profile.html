@@ -1,1 +1,83 @@
+{% extends "base.html" %}
 
+{% block title %}Edit Profile | Gadbaddu{% endblock %}
+
+{% block content %}
+<section class="edit-container">
+
+    <h1>Edit Profile</h1>
+    <p>Update your Gadbaddu profile information.</p>
+
+    <form action="/edit-profile" method="POST">
+
+        <label>Username</label>
+        <input
+            type="text"
+            name="username"
+            value="{{ user.username }}"
+            maxlength="30"
+            required
+        >
+
+        <label>Bio</label>
+        <textarea
+            name="bio"
+            rows="4"
+            maxlength="160"
+            placeholder="Write something about yourself..."
+        >{{ user.bio or '' }}</textarea>
+
+        <button type="submit">Save Changes</button>
+
+    </form>
+
+    <a href="/profile" class="back-link">← Back to Profile</a>
+
+</section>
+
+<style>
+.edit-container {
+    max-width: 500px;
+    margin: 35px auto;
+    padding: 25px;
+    color: white;
+    background: #191919;
+    border-radius: 18px;
+}
+.edit-container p {
+    color: #aaa;
+}
+.edit-container label {
+    display: block;
+    margin: 20px 0 8px;
+}
+.edit-container input,
+.edit-container textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px;
+    color: white;
+    background: #292929;
+    border: 1px solid #444;
+    border-radius: 9px;
+    font: inherit;
+}
+.edit-container button {
+    width: 100%;
+    margin-top: 22px;
+    padding: 14px;
+    border: none;
+    border-radius: 9px;
+    color: white;
+    background: linear-gradient(90deg, #ff287d, #8b35ff);
+    font-weight: bold;
+    cursor: pointer;
+}
+.back-link {
+    display: inline-block;
+    margin-top: 20px;
+    color: #ff55a5;
+    text-decoration: none;
+}
+</style>
+{% endblock %}
