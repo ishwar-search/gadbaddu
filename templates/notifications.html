@@ -1,1 +1,50 @@
+{% extends "base.html" %}
 
+{% block title %}Notifications | Gadbaddu{% endblock %}
+
+{% block content %}
+<section class="page-container">
+    <div class="page-heading">
+        <h1>Notifications</h1>
+        <p>Stay updated with Gadbaddu</p>
+    </div>
+
+    <div class="notification-empty">
+        <div class="notification-icon">🔔</div>
+        <h2>You're all caught up!</h2>
+        <p>When someone follows you or interacts with your videos, notifications will appear here.</p>
+    </div>
+</section>
+
+<style>
+.page-container {
+    max-width: 700px;
+    margin: 30px auto;
+    padding: 20px;
+    color: white;
+}
+.page-heading {
+    margin-bottom: 30px;
+}
+.page-heading h1 {
+    font-size: 28px;
+}
+.page-heading p {
+    color: #aaa;
+}
+.notification-empty {
+    text-align: center;
+    padding: 65px 20px;
+    background: #171717;
+    border-radius: 18px;
+}
+.notification-icon {
+    font-size: 55px;
+    margin-bottom: 15px;
+}
+.notification-empty p {
+    color: #aaa;
+    line-height: 1.6;
+}
+</style>
+{% endblock %}
