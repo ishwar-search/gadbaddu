@@ -1,1 +1,71 @@
+{% extends "base.html" %}
 
+{% block title %}Settings | Gadbaddu{% endblock %}
+
+{% block content %}
+<section class="settings-container">
+
+    <h1>Settings</h1>
+    <p class="subtitle">Manage your Gadbaddu account</p>
+
+    <div class="settings-card">
+        <h3>👤 Account</h3>
+        <a href="/profile">View Profile</a>
+        <a href="/edit-profile">Edit Profile</a>
+    </div>
+
+    <div class="settings-card">
+        <h3>🔒 Privacy & Safety</h3>
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/terms">Terms & Conditions</a>
+    </div>
+
+    <div class="settings-card">
+        <h3>⚙️ App Information</h3>
+        <p>App Name: Gadbaddu</p>
+        <p>Version: 1.0.0</p>
+    </div>
+
+    {% if user %}
+    <div class="settings-card">
+        <h3>🚪 Account</h3>
+        <a class="logout-link" href="/logout">Logout</a>
+    </div>
+    {% endif %}
+
+</section>
+
+<style>
+.settings-container {
+    max-width: 650px;
+    margin: 30px auto;
+    padding: 20px;
+    color: white;
+}
+.subtitle {
+    color: #aaa;
+}
+.settings-card {
+    background: #191919;
+    padding: 20px;
+    border-radius: 15px;
+    margin-top: 20px;
+}
+.settings-card h3 {
+    margin-top: 0;
+}
+.settings-card a {
+    display: block;
+    color: #ddd;
+    text-decoration: none;
+    padding: 13px 0;
+    border-top: 1px solid #333;
+}
+.settings-card a:hover {
+    color: #ff3b9d;
+}
+.settings-card .logout-link {
+    color: #ff5252;
+}
+</style>
+{% endblock %}
