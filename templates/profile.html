@@ -1,1 +1,186 @@
 
+{% extends "base.html" %}
+
+{% block title %}@{{ profile_user.username }} | Gadbaddu{% endblock %}
+
+{% block content %}
+
+<style>
+.profile-page{max-width:950px;margin:25px auto;padding:16px;color:white}
+.profile-header{background:#191722;border:1px solid #302b3c;border-radius:18px;padding:25px}
+.profile-top{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.profile-avatar{width:85px;height:85px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(130deg,#ff2e88,#813cff);font-size:38px;overflow:hidden}
+.profile-avatar img{width:100%;height:100%;object-fit:cover}
+.profile-name{flex:1;min-width:150px}
+.profile-name h2{margin:0 0 7px;overflow-wrap:anywhere}
+.profile-bio{color:#ccc;line-height:1.5;overflow-wrap:anywhere}
+.profile-stats{display:flex;gap:25px;flex-wrap:wrap;margin:22px 0;color:#ddd}
+.profile-stats strong{color:white}
+.profile-actions{display:flex;gap:9px;flex-wrap:wrap}
+.profile-btn,.profile-actions button{padding:10px 16px;border:0;border-radius:8px;background:#ff2e88;color:white;text-decoration:none;font-weight:bold;cursor:pointer}
+.secondary-btn{background:#302b3c!important}
+.profile-form{margin-top:18px;padding-top:15px;border-top:1px solid #393545}
+.profile-form textarea{width:100%;box-sizing:border-box;padding:12px;background:#100f16;color:white;border:1px solid #393545;border-radius:9px;resize:vertical}
+.profile-form button{margin-top:8px}
+.profile-posts{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:15px;margin-top:18px}
+.profile-post{background:#191722;border:1px solid #302b3c;border-radius:13px;overflow:hidden}
+.profile-media{width:100%;height:260px;object-fit:cover;display:block;background:#09090d}
+.profile-post-info{padding:13px}
+.profile-post-info p{overflow-wrap:anywhere;color:#ddd}
+.post-stats{display:flex;gap:12px;flex-wrap:wrap;color:#aaa;font-size:13px}
+.post-form{padding:12px;border-top:1px solid #393545}
+.post-form input{width:100%;box-sizing:border-box;padding:10px;background:#100f16;color:white;border:1px solid #393545;border-radius:8px;margin-bottom:8px}
+.post-form button{padding:8px 12px;background:#ff2e88;color:white;border:0;border-radius:7px}
+.empty-posts{padding:35px;text-align:center;background:#191722;border-radius:14px;color:#aaa}
+.profile-section-title{margin-top:30px}
+@media(max-width:550px){.profile-page{padding:10px}.profile-header{padding:17px}.profile-media{height:220px}}
+</style>
+
+<div class="profile-page">
+
+    <section class="profile-header">
+
+        <div class="profile-top">
+
+            <div class="profile-avatar">
+                {% if profile_user.avatar %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ profile_user.avatar) }}" alt="Profile photo">
+                {% else %}
+                    😂
+                {% endif %}
+            </div>
+
+            <div class="profile-name">
+                <h2>@{{ profile_user.username }}</h2>
+                <p class="profile-bio">{{ profile_user.bio or 'Welcome to my Gadbaddu profile!' }}</p>
+            </div>
+
+        </div>
+
+        <div class="profile-stats">
+            <span><strong>{{ posts|length }}</strong> Posts</span>
+            <span><strong>{{ followers }}</strong> Followers</span>
+            <span><strong>{{ following }}</strong> Following</span>
+        </div>
+
+        <div class="profile-actions">
+
+            {% if user and user.id == profile_user.id %}
+
+                <a class="profile-btn" href="{{ url_for('upload') }}">＋ Upload</a>
+                <a class="profile-btn secondary-btn" href="{{ url_for('referrals') }}">Referrals</a>
+
+            {% elif user %}
+
+                <form method="POST" action="{{ url_for('follow', username=profile_user.username) }}">
+                    <button type="submit">
+                        {{ 'Unfollow' if is_following else 'Follow' }}
+                    </button>
+                </form>
+
+                <a class="profile-btn secondary-btn" href="{{ url_for('chat', username=profile_user.username) }}">Message</a>
+
+                <form method="POST" action="{{ url_for('block_user', username=profile_user.username) }}">
+                    <button type="submit" class="secondary-btn">Block</button>
+                </form>
+
+            {% else %}
+
+                <a class="profile-btn" href="{{ url_for('login') }}">Login to Follow</a>
+
+            {% endif %}
+
+        </div>
+
+        {% if user and user.id == profile_user.id %}
+        <form class="profile-form" method="POST" action="{{ url_for('edit_profile') }}">
+            <label for="bio"><strong>Edit your Bio</strong></label>
+            <textarea id="bio" name="bio" maxlength="250" rows="3" placeholder="Write something about yourself...">{{ profile_user.bio }}</textarea>
+            <button class="profile-btn" type="submit">Save Bio</button>
+        </form>
+        {% endif %}
+
+    </section>
+
+    {% if referral_code is defined %}
+    <section class="profile-section-title">
+        <h3>🎁 Referral Information</h3>
+        <p>Your referral code: <strong>{{ referral_code }}</strong></p>
+        <p>Your points: <strong>{{ points }}</strong></p>
+        {% if referral_list is defined %}
+            {% for item in referral_list %}
+                <p>@{{ item.username }} · {{ item.points_awarded }} points</p>
+            {% else %}
+                <p>No referrals yet.</p>
+            {% endfor %}
+        {% endif %}
+    </section>
+    {% endif %}
+
+    <h3 class="profile-section-title">🎬 Posts</h3>
+
+    {% if posts %}
+
+    <div class="profile-posts">
+
+        {% for post in posts %}
+
+        <article class="profile-post">
+
+            {% if post.media_type == 'video' %}
+            <video class="profile-media"
+                   src="{{ url_for('static', filename='uploads/' ~ post.media) }}"
+                   controls
+                   playsinline
+                   preload="metadata"></video>
+            {% else %}
+            <img class="profile-media"
+                 src="{{ url_for('static', filename='uploads/' ~ post.media) }}"
+                 alt="Gadbaddu post"
+                 loading="lazy">
+            {% endif %}
+
+            <div class="profile-post-info">
+                <p>{{ post.caption or 'No caption' }}</p>
+
+                <div class="post-stats">
+                    <span>❤️ {{ post.like_count }}</span>
+                    <span>💬 {{ post.comment_count }}</span>
+                </div>
+            </div>
+
+            {% if user %}
+            <form class="post-form" method="POST" action="{{ url_for('comment', post_id=post.id) }}">
+                <input type="text" name="comment" maxlength="1000" placeholder="Write a comment..." required>
+                <button type="submit">Comment</button>
+            </form>
+
+            <form class="post-form" method="POST" action="{{ url_for('report_post', post_id=post.id) }}">
+                <input type="text" name="reason" maxlength="500" placeholder="Report reason (optional)">
+                <button type="submit">Report Post</button>
+            </form>
+            {% endif %}
+
+        </article>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-posts">
+        <div style="font-size:42px">🎬</div>
+        <h3>No Posts Yet</h3>
+        <p>This profile has not shared any posts.</p>
+        {% if user and user.id == profile_user.id %}
+            <a class="profile-btn" href="{{ url_for('upload') }}">Upload Your First Post</a>
+        {% endif %}
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
