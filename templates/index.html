@@ -1,671 +1,464 @@
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#10101b">
-
-    <title>Gadbaddu - Social Community</title>
-
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
-
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #10101b;
-            color: #f5f5fa;
-            font-family: Arial, sans-serif;
-        }
-
-        a {
-            color: inherit;
-            text-decoration: none;
-        }
-
-        button, input {
-            font: inherit;
-        }
-
-        .navbar {
-            background: #191927;
-            border-bottom: 1px solid #303044;
-            padding: 15px 5%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .logo {
-            font-size: 27px;
-            font-weight: 900;
-            color: #c084fc;
-        }
-
-        .logo span {
-            color: #facc15;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 18px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .nav-links a {
-            color: #ddd;
-            font-size: 14px;
-        }
-
-        .nav-links a:hover {
-            color: #d8a5ff;
-        }
-
-        .search-form {
-            display: flex;
-            gap: 6px;
-        }
-
-        .search-form input {
-            width: 190px;
-            padding: 9px 12px;
-            border: 1px solid #39394e;
-            border-radius: 20px;
-            background: #10101b;
-            color: white;
-            outline: none;
-        }
-
-        .search-form button,
-        .primary-btn {
-            background: #9333ea;
-            color: white;
-            border: none;
-            padding: 9px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-        }
-
-        .container {
-            max-width: 1050px;
-            margin: 30px auto;
-            padding: 0 16px;
-            display: grid;
-            grid-template-columns: 250px minmax(0, 600px);
-            gap: 25px;
-            justify-content: center;
-        }
-
-        .sidebar, .post-card, .welcome-card {
-            background: #191927;
-            border: 1px solid #303044;
-            border-radius: 16px;
-        }
-
-        .sidebar {
-            padding: 20px;
-            height: fit-content;
-            position: sticky;
-            top: 20px;
-        }
-
-        .sidebar h3 {
-            color: #d8a5ff;
-            margin-bottom: 16px;
-        }
-
-        .side-link {
-            display: block;
-            padding: 12px 10px;
-            border-radius: 9px;
-            color: #ddd;
-            margin-bottom: 5px;
-        }
-
-        .side-link:hover {
-            background: #29243a;
-        }
-
-        .welcome-card {
-            padding: 20px;
-            margin-bottom: 20px;
-            background: linear-gradient(120deg, #30204b, #20203a);
-        }
-
-        .welcome-card h2 {
-            font-size: 23px;
-            margin-bottom: 8px;
-        }
-
-        .welcome-card p {
-            color: #c9c4d8;
-            line-height: 1.5;
-            font-size: 14px;
-        }
-
-        .post-card {
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-
-        .post-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 16px;
-        }
-
-        .avatar {
-            width: 43px;
-            height: 43px;
-            border-radius: 50%;
-            background: #7835b7;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            overflow: hidden;
-        }
-
-        .avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .username {
-            font-weight: bold;
-        }
-
-        .post-date {
-            font-size: 12px;
-            color: #aaa;
-            margin-top: 4px;
-        }
-
-        .post-caption {
-            padding: 0 16px 15px;
-            line-height: 1.6;
-            overflow-wrap: anywhere;
-        }
-
-        .post-media {
-            width: 100%;
-            max-height: 550px;
-            object-fit: contain;
-            display: block;
-            background: #080810;
-        }
-
-        .post-stats {
-            padding: 13px 16px;
-            color: #aaa;
-            font-size: 13px;
-            border-bottom: 1px solid #303044;
-        }
-
-        .post-actions {
-            padding: 12px 16px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .action-btn {
-            background: #29293a;
-            border: 1px solid #414157;
-            color: white;
-            padding: 9px 14px;
-            border-radius: 20px;
-            cursor: pointer;
-        }
-
-        .action-btn:hover {
-            background: #493064;
-        }
-
-        .comment-form {
-            padding: 0 16px 16px;
-            display: flex;
-            gap: 8px;
-        }
-
-        .comment-form input {
-            flex: 1;
-            min-width: 0;
-            padding: 11px;
-            border-radius: 20px;
-            border: 1px solid #414157;
-            background: #10101b;
-            color: white;
-            outline: none;
-        }
-
-        .comment-form button {
-            background: #9333ea;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 0 15px;
-            cursor: pointer;
-        }
-
-        .report-form {
-            padding: 0 16px 15px;
-            text-align: right;
-        }
-
-        .report-form button {
-            color: #aaa;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .report-form button:hover {
-            color: #ff7777;
-        }
-
-        .empty-state {
-            background: #191927;
-            border: 1px solid #303044;
-            border-radius: 16px;
-            text-align: center;
-            padding: 45px 20px;
-            color: #bbb;
-        }
-
-        .empty-state h2 {
-            color: white;
-            margin-bottom: 10px;
-        }
-
-        .flash {
-            max-width: 800px;
-            margin: 15px auto;
-            padding: 12px 16px;
-            border-radius: 10px;
-            background: #29243a;
-            border: 1px solid #62418a;
-        }
-
-        .footer {
-            text-align: center;
-            color: #888;
-            padding: 30px 15px;
-            font-size: 13px;
-        }
-
-        @media (max-width: 750px) {
-            .container {
-                display: block;
-                margin-top: 18px;
-            }
-
-            .sidebar {
-                display: none;
-            }
-
-            .navbar {
-                padding: 13px 4%;
-            }
-
-            .nav-links {
-                gap: 12px;
-            }
-
-            .search-form {
-                width: 100%;
-            }
-
-            .search-form input {
-                flex: 1;
-                width: auto;
-            }
-
-            .welcome-card h2 {
-                font-size: 20px;
-            }
-        }
-    </style>
-</head>
-
-<body>
-
-    <!-- NAVIGATION -->
-    <header class="navbar">
-
-        <a href="{{ url_for('index') }}" class="logo">
-            Gadbad<span>du</span>
-        </a>
-
-        <nav class="nav-links">
-            <a href="{{ url_for('index') }}">Home</a>
-            <a href="{{ url_for('explore') }}">Explore</a>
-
-            {% if user %}
-                <a href="{{ url_for('upload') }}">Create Post</a>
-                <a href="{{ url_for('messages') }}">Messages</a>
-                <a href="{{ url_for('my_profile') }}">Profile</a>
-                <a href="{{ url_for('logout') }}">Logout</a>
-            {% else %}
-                <a href="{{ url_for('login') }}">Login</a>
-                <a href="{{ url_for('register') }}">Register</a>
-            {% endif %}
-        </nav>
-
-        <form class="search-form" action="{{ url_for('explore') }}" method="GET">
-            <input
-                type="search"
-                name="q"
-                placeholder="Search Gadbaddu..."
-                aria-label="Search"
-            >
-            <button type="submit">Search</button>
-        </form>
-
-    </header>
-
-
-    <!-- FLASH MESSAGES -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="flash">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-
-    <!-- MAIN CONTENT -->
-    <main class="container">
-
-        <!-- SIDEBAR -->
-        <aside class="sidebar">
-
-            <h3>Gadbaddu Menu</h3>
-
-            <a class="side-link" href="{{ url_for('index') }}">
-                🏠 Home Feed
-            </a>
-
-            <a class="side-link" href="{{ url_for('explore') }}">
-                🔍 Explore
-            </a>
-
-            {% if user %}
-                <a class="side-link" href="{{ url_for('my_profile') }}">
-                    👤 My Profile
-                </a>
-
-                <a class="side-link" href="{{ url_for('upload') }}">
-                    ➕ Create Post
-                </a>
-
-                <a class="side-link" href="{{ url_for('messages') }}">
-                    💬 Messages
-                </a>
-
-                <a class="side-link" href="{{ url_for('referrals') }}">
-                    🎁 My Referrals
-                </a>
-            {% else %}
-                <a class="side-link" href="{{ url_for('login') }}">
-                    🔐 Login
-                </a>
-
-                <a class="side-link" href="{{ url_for('register') }}">
-                    ✨ Join Gadbaddu
-                </a>
-            {% endif %}
-
-        </aside>
-
-
-        <!-- FEED -->
-        <section class="feed">
-
-            <div class="welcome-card">
-                {% if user %}
-                    <h2>Welcome back, @{{ user.username }}! 👋</h2>
-                    <p>
-                        Share your moments, discover new people
-                        and enjoy the Gadbaddu community.
-                    </p>
+{% extends "base.html" %}
+
+{% block title %}Gadbaddu | For You{% endblock %}
+
+{% block content %}
+
+<style>
+.feed-page {
+    position: relative;
+    width: 100%;
+    min-height: 75vh;
+    color: #fff;
+}
+
+.feed-tabs {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    padding: 16px 10px;
+    background: rgba(12, 12, 18, .95);
+    backdrop-filter: blur(12px);
+}
+
+.feed-tabs a {
+    color: #aaa;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 15px;
+    padding-bottom: 8px;
+}
+
+.feed-tabs a.active {
+    color: #fff;
+    border-bottom: 3px solid #ff2e88;
+}
+
+.video-feed {
+    width: 100%;
+    max-width: 520px;
+    margin: auto;
+}
+
+.feed-item {
+    position: relative;
+    width: 100%;
+    height: min(78vh, 850px);
+    min-height: 520px;
+    margin: 12px auto 25px;
+    overflow: hidden;
+    border-radius: 18px;
+    background: #09090d;
+    isolation: isolate;
+}
+
+.feed-media {
+    position: absolute;
+    inset: 0;
+    background: #111;
+}
+
+.feed-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.video-details {
+    position: absolute;
+    z-index: 3;
+    left: 16px;
+    right: 85px;
+    bottom: 25px;
+    text-shadow: 0 2px 8px #000;
+}
+
+.creator-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.creator-info a {
+    color: #fff;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.follow-small {
+    border: 1px solid #ff2e88;
+    border-radius: 7px;
+    padding: 6px 12px;
+    color: #fff;
+    background: #ff2e88;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.video-caption {
+    font-size: 15px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.video-tag {
+    color: #ffd84d;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.video-actions {
+    position: absolute;
+    z-index: 4;
+    right: 12px;
+    bottom: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.video-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font-size: 25px;
+    text-decoration: none;
+    cursor: pointer;
+    text-shadow: 0 2px 6px #000;
+}
+
+.video-action span {
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.video-actions form {
+    margin: 0;
+}
+
+.creator-avatar {
+    width: 43px;
+    height: 43px;
+    border: 2px solid #ff2e88;
+    border-radius: 50%;
+    background: #292039;
+    display: grid;
+    place-items: center;
+    font-size: 23px;
+    text-decoration: none;
+}
+
+.video-progress {
+    position: absolute;
+    z-index: 5;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 0;
+    background: #ff2e88;
+}
+
+.empty-feed {
+    max-width: 420px;
+    margin: 70px auto;
+    padding: 35px 20px;
+    text-align: center;
+    border-radius: 20px;
+    background: #17151f;
+}
+
+.empty-icon {
+    font-size: 55px;
+    margin-bottom: 15px;
+}
+
+.empty-feed h2 {
+    margin-bottom: 10px;
+}
+
+.empty-feed p {
+    color: #aaa;
+}
+
+.primary-btn {
+    display: inline-block;
+    margin-top: 18px;
+    padding: 12px 22px;
+    border-radius: 9px;
+    background: linear-gradient(110deg, #ff2e88, #813cff);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 800;
+}
+
+.splash-screen {
+    position: fixed;
+    z-index: 99999;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #090811;
+    transition: opacity .4s ease;
+}
+
+.splash-logo {
+    text-align: center;
+    animation: logo-pop .7s ease;
+}
+
+.splash-emoji {
+    font-size: 75px;
+}
+
+.splash-logo h1 {
+    margin: 10px 0 4px;
+    font-size: 42px;
+    font-weight: 900;
+    background: linear-gradient(90deg, #ffcf36, #ff2e88, #a35bff);
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.splash-logo p {
+    color: #aaa;
+    letter-spacing: 2px;
+    font-size: 12px;
+}
+
+@keyframes logo-pop {
+    from { transform: scale(.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+@media (max-width: 600px) {
+    .feed-tabs {
+        gap: 22px;
+        padding: 12px 5px;
+    }
+
+    .feed-item {
+        width: 100%;
+        height: calc(100dvh - 135px);
+        min-height: 480px;
+        margin: 0 auto 15px;
+        border-radius: 0;
+    }
+
+    .video-feed {
+        max-width: 100%;
+    }
+
+    .video-details {
+        bottom: 24px;
+    }
+
+    .video-actions {
+        right: 10px;
+        bottom: 24px;
+    }
+}
+</style>
+
+<div class="splash-screen" id="splashScreen">
+    <div class="splash-logo">
+        <div class="splash-emoji">😂</div>
+        <h1>Gadbaddu</h1>
+        <p>ENTERTAINMENT UNLIMITED</p>
+    </div>
+</div>
+
+<section class="feed-page">
+
+    <nav class="feed-tabs">
+        <a href="{{ url_for('index') }}" class="active">For You</a>
+        <a href="{{ url_for('index') }}#following">Following</a>
+        <a href="{{ url_for('explore') }}">Trending</a>
+    </nav>
+
+    {% if posts %}
+
+    <div class="video-feed">
+
+        {% for post in posts %}
+
+        <article class="feed-item">
+
+            <div class="feed-media">
+
+                {% if post.media_type == 'video' %}
+
+                <video
+                    class="feed-video"
+                    src="{{ url_for('static', filename='uploads/' ~ post.filename) }}"
+                    loop
+                    muted
+                    playsinline
+                    preload="metadata">
+                </video>
+
                 {% else %}
-                    <h2>Welcome to Gadbaddu! 🎉</h2>
-                    <p>
-                        A place to share ideas, discover content
-                        and connect with people.
-                    </p>
 
-                    <br>
+                <img
+                    class="feed-video"
+                    src="{{ url_for('static', filename='uploads/' ~ post.filename) }}"
+                    alt="Gadbaddu post"
+                    loading="lazy">
 
-                    <a class="primary-btn" href="{{ url_for('register') }}">
-                        Join Gadbaddu
-                    </a>
                 {% endif %}
+
             </div>
 
+            <div class="video-details">
 
-            <!-- POSTS -->
-            {% if posts %}
+                <div class="creator-info">
 
-                {% for post in posts %}
+                    <a href="{{ url_for('profile', username=post.username) }}">
+                        @{{ post.username }}
+                    </a>
 
-                    <article class="post-card">
+                    {% if user and user.username != post.username %}
 
-                        <!-- POST HEADER -->
-                        <div class="post-header">
+                    <form
+                        method="POST"
+                        action="{{ url_for('follow', username=post.username) }}"
+                        data-follow-form>
 
-                            <div class="avatar">
-                                {% if post.avatar %}
-                                    <img
-                                        src="{{ url_for('static', filename=post.avatar) }}"
-                                        alt="Profile picture"
-                                    >
-                                {% else %}
-                                    {{ post.username[0]|upper }}
-                                {% endif %}
-                            </div>
+                        <button type="submit" class="follow-small">
+                            Follow
+                        </button>
 
-                            <div>
-                                <a
-                                    class="username"
-                                    href="{{ url_for('profile', username=post.username) }}"
-                                >
-                                    @{{ post.username }}
-                                </a>
+                    </form>
 
-                                <div class="post-date">
-                                    {{ post.created_at }}
-                                </div>
-                            </div>
+                    {% elif not user %}
 
-                        </div>
+                    <a href="{{ url_for('login') }}" class="follow-small">
+                        Follow
+                    </a>
 
-
-                        <!-- CAPTION -->
-                        {% if post.caption %}
-                            <div class="post-caption">
-                                {{ post.caption }}
-                            </div>
-                        {% endif %}
-
-
-                        <!-- IMAGE / VIDEO -->
-                        {% if post.media_type == "image" %}
-
-                            <img
-                                class="post-media"
-                                src="{{ url_for('static', filename='uploads/' ~ post.media) }}"
-                                alt="Gadbaddu post"
-                                loading="lazy"
-                            >
-
-                        {% elif post.media_type == "video" %}
-
-                            <video
-                                class="post-media"
-                                controls
-                                preload="metadata"
-                                playsinline
-                            >
-                                <source
-                                    src="{{ url_for('static', filename='uploads/' ~ post.media) }}"
-                                >
-                                Your browser does not support video.
-                            </video>
-
-                        {% endif %}
-
-
-                        <!-- POST COUNTS -->
-                        <div class="post-stats">
-                            ❤️ {{ post.like_count }} Likes
-                            &nbsp; · &nbsp;
-                            💬 {{ post.comment_count }} Comments
-                        </div>
-
-
-                        <!-- POST ACTIONS -->
-                        <div class="post-actions">
-
-                            {% if user %}
-
-                                <form
-                                    action="{{ url_for('like', post_id=post.id) }}"
-                                    method="POST"
-                                >
-                                    <button class="action-btn" type="submit">
-                                        ❤️ Like
-                                    </button>
-                                </form>
-
-                                <button
-                                    class="action-btn"
-                                    type="button"
-                                    onclick="document.getElementById('comment-{{ post.id }}').focus()"
-                                >
-                                    💬 Comment
-                                </button>
-
-                            {% else %}
-
-                                <a class="action-btn" href="{{ url_for('login') }}">
-                                    ❤️ Login to Like
-                                </a>
-
-                            {% endif %}
-
-                        </div>
-
-
-                        <!-- COMMENT FORM -->
-                        {% if user %}
-
-                            <form
-                                class="comment-form"
-                                action="{{ url_for('comment', post_id=post.id) }}"
-                                method="POST"
-                            >
-
-                                <input
-                                    id="comment-{{ post.id }}"
-                                    type="text"
-                                    name="comment"
-                                    placeholder="Write a comment..."
-                                    maxlength="1000"
-                                    required
-                                >
-
-                                <button type="submit">
-                                    Send
-                                </button>
-
-                            </form>
-
-                        {% endif %}
-
-
-                        <!-- REPORT POST -->
-                        {% if user and user.id != post.user_id %}
-
-                            <form
-                                class="report-form"
-                                action="{{ url_for('report_post', post_id=post.id) }}"
-                                method="POST"
-                            >
-                                <input
-                                    type="hidden"
-                                    name="reason"
-                                    value="Reported by user"
-                                >
-
-                                <button type="submit">
-                                    Report Post
-                                </button>
-                            </form>
-
-                        {% endif %}
-
-                    </article>
-
-                {% endfor %}
-
-            {% else %}
-
-                <div class="empty-state">
-
-                    <h2>No Posts Yet! 📭</h2>
-
-                    <p>
-                        Be the first person to share something
-                        with the Gadbaddu community.
-                    </p>
-
-                    {% if user %}
-                        <br>
-
-                        <a class="primary-btn" href="{{ url_for('upload') }}">
-                            Create Your First Post
-                        </a>
-                    {% else %}
-                        <br>
-
-                        <a class="primary-btn" href="{{ url_for('register') }}">
-                            Create Account
-                        </a>
                     {% endif %}
 
                 </div>
 
-            {% endif %}
+                <p class="video-caption">{{ post.caption }}</p>
+                <p class="video-tag">#Gadbaddu #ForYou</p>
 
-        </section>
+            </div>
 
-    </main>
+            <div class="video-actions">
 
+                <form
+                    method="POST"
+                    action="{{ url_for('like', post_id=post.id) }}">
 
-    <!-- FOOTER -->
-    <footer class="footer">
-        <p>© 2026 Gadbaddu. All rights reserved.</p>
-        <p>Connect • Share • Discover</p>
-        <p>Search Smarter, Live Better.</p>
-    </footer>
+                    <button
+                        type="submit"
+                        class="video-action"
+                        data-login-required>
+                        ❤️
+                        <span>{{ post.likes }} Likes</span>
+                    </button>
 
-</body>
-</html>
+                </form>
 
+                <a
+                    href="{{ url_for('profile', username=post.username) }}"
+                    class="video-action">
+                    💬
+                    <span>Comments</span>
+                </a>
+
+                <button
+                    type="button"
+                    class="video-action"
+                    data-share>
+                    ↗️
+                    <span>Share</span>
+                </button>
+
+                <a
+                    href="{{ url_for('profile', username=post.username) }}"
+                    class="creator-avatar">
+                    😂
+                </a>
+
+            </div>
+
+            <div class="video-progress"></div>
+
+        </article>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="empty-feed">
+
+        <div class="empty-icon">🎬</div>
+
+        <h2>Welcome to Gadbaddu!</h2>
+
+        <p>Abhi koi video upload nahi hua hai.</p>
+
+        {% if user %}
+
+        <a href="{{ url_for('upload') }}" class="primary-btn">
+            + Upload First Video
+        </a>
+
+        {% else %}
+
+        <a href="{{ url_for('login') }}" class="primary-btn">
+            Login to Upload
+        </a>
+
+        {% endif %}
+
+    </div>
+
+    {% endif %}
+
+</section>
+
+<script>
+(function () {
+    const splash = document.getElementById("splashScreen");
+
+    if (!splash) return;
+
+    try {
+        if (sessionStorage.getItem("gadbaddu_splash_seen")) {
+            splash.remove();
+            return;
+        }
+
+        sessionStorage.setItem("gadbaddu_splash_seen", "yes");
+    } catch (error) {
+        // Splash still works if session storage is unavailable.
+    }
+
+    setTimeout(function () {
+        splash.style.opacity = "0";
+
+        setTimeout(function () {
+            splash.remove();
+        }, 450);
+    }, 2500);
+})();
+</script>
+
+{% endblock %}
