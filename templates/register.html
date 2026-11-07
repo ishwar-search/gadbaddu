@@ -1,1 +1,316 @@
 
+{% extends "base.html" %}
+
+{% block title %}Create Account | Gadbaddu{% endblock %}
+
+{% block content %}
+
+<style>
+.register-container {
+    max-width: 460px;
+    margin: 35px auto;
+    padding: 30px 25px;
+    background: #191722;
+    color: #fff;
+    border: 1px solid #302b3c;
+    border-radius: 18px;
+    box-sizing: border-box;
+}
+
+.register-logo {
+    text-align: center;
+    font-size: 58px;
+    margin-bottom: 8px;
+}
+
+.register-container h2 {
+    text-align: center;
+    margin: 8px 0;
+    font-size: 27px;
+}
+
+.register-subtitle {
+    text-align: center;
+    color: #aaa;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+
+.register-form label {
+    display: block;
+    margin: 15px 0 7px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #ddd;
+}
+
+.register-form input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px;
+    border: 1px solid #393545;
+    border-radius: 9px;
+    background: #0e0d14;
+    color: #fff;
+    outline: none;
+    font-size: 14px;
+}
+
+.register-form input:focus {
+    border-color: #ff2e88;
+    box-shadow: 0 0 0 2px rgba(255,46,136,.12);
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper input {
+    padding-right: 65px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #ff65a7;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.register-hint {
+    color: #888;
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+.register-button {
+    width: 100%;
+    margin-top: 24px;
+    padding: 14px;
+    border: none;
+    border-radius: 9px;
+    background: linear-gradient(110deg, #ff2e88, #813cff);
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity .2s;
+}
+
+.register-button:hover {
+    opacity: .88;
+}
+
+.register-footer {
+    text-align: center;
+    color: #aaa;
+    margin-top: 22px;
+    font-size: 14px;
+    line-height: 2;
+}
+
+.register-footer a {
+    color: #ff65a7;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+@media (max-width: 500px) {
+    .register-container {
+        margin: 20px 12px;
+        padding: 24px 18px;
+    }
+}
+</style>
+
+<div class="register-container">
+
+    <div class="register-logo">😂</div>
+
+    <h2>Join Gadbaddu!</h2>
+
+    <p class="register-subtitle">
+        Create your account and become a part of our community.
+    </p>
+
+    <form
+        class="register-form"
+        method="POST"
+        action="{{ url_for('register') }}"
+        id="registerForm">
+
+        <label for="username">Username</label>
+
+        <input
+            type="text"
+            id="username"
+            name="username"
+            placeholder="Choose a username"
+            minlength="3"
+            maxlength="20"
+            pattern="[a-zA-Z0-9_]+"
+            title="Use 3-20 letters, numbers or underscores."
+            autocomplete="username"
+            required>
+
+        <p class="register-hint">
+            3-20 characters. Letters, numbers and underscore only.
+        </p>
+
+        <label for="email">Email Address</label>
+
+        <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Enter your email"
+            maxlength="150"
+            autocomplete="email"
+            required>
+
+        <label for="password">Password</label>
+
+        <div class="password-wrapper">
+            <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Create a password"
+                minlength="8"
+                maxlength="128"
+                autocomplete="new-password"
+                required>
+
+            <button
+                type="button"
+                class="password-toggle"
+                data-toggle="password">
+                Show
+            </button>
+        </div>
+
+        <p class="register-hint">
+            Password must contain at least 8 characters.
+        </p>
+
+        <label for="confirmPassword">Confirm Password</label>
+
+        <div class="password-wrapper">
+            <input
+                type="password"
+                id="confirmPassword"
+                placeholder="Enter password again"
+                minlength="8"
+                maxlength="128"
+                autocomplete="new-password"
+                required>
+
+            <button
+                type="button"
+                class="password-toggle"
+                data-toggle="confirmPassword">
+                Show
+            </button>
+        </div>
+
+        <label for="referral_code">
+            Referral Code (Optional)
+        </label>
+
+        <input
+            type="text"
+            id="referral_code"
+            name="referral_code"
+            placeholder="Enter referral code"
+            maxlength="30"
+            autocomplete="off">
+
+        <p class="register-hint">
+            If someone invited you, enter their referral code.
+        </p>
+
+        <button type="submit" class="register-button">
+            Create My Account
+        </button>
+
+    </form>
+
+    <div class="register-footer">
+
+        <p>
+            Already have an account?
+            <a href="{{ url_for('login') }}">Login Here</a>
+        </p>
+
+        <p>
+            <a href="{{ url_for('index') }}">
+                Continue as Guest
+            </a>
+        </p>
+
+    </div>
+
+</div>
+
+<script>
+(function () {
+
+    const form = document.getElementById("registerForm");
+    const password = document.getElementById("password");
+    const confirmPassword = document.getElementById("confirmPassword");
+
+    document.querySelectorAll("[data-toggle]").forEach(function (button) {
+
+        button.addEventListener("click", function () {
+
+            const input = document.getElementById(
+                button.getAttribute("data-toggle")
+            );
+
+            if (input.type === "password") {
+                input.type = "text";
+                button.textContent = "Hide";
+            } else {
+                input.type = "password";
+                button.textContent = "Show";
+            }
+
+        });
+
+    });
+
+    form.addEventListener("submit", function (event) {
+
+        if (password.value !== confirmPassword.value) {
+
+            event.preventDefault();
+
+            alert("Passwords do not match. Please check again.");
+
+            confirmPassword.focus();
+
+            return;
+        }
+
+        if (password.value.length < 8) {
+
+            event.preventDefault();
+
+            alert("Password must be at least 8 characters.");
+
+            password.focus();
+
+        }
+
+    });
+
+})();
+</script>
+
+{% endblock %}
+
