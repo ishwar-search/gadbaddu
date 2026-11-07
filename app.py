@@ -1,4 +1,3 @@
-
 import os
 import re
 import secrets
@@ -6,6 +5,7 @@ import sqlite3
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
+from urllib.parse import urlparse
 
 from flask import (
     Flask, render_template, request, redirect,
@@ -43,6 +43,12 @@ ALLOWED_EXTENSIONS = {
 
 IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
 VIDEO_EXTENSIONS = {"mp4", "webm", "mov"}
+
+
+@app.context_processor
+def inject_current_user():
+    user = current_user()
+    return {"user": user, "current_user": user}
 
 
 # --------------------------------------------------
@@ -173,6 +179,7 @@ def now():
 
 def current_user():
     user_id = session.get("user_id")
+
     if not user_id:
         return None
 
@@ -182,13 +189,41 @@ def current_user():
         ).fetchone()
 
 
+def safe_next_url(target):
+    if not target:
+        return url_for("index")
+
+    parsed = urlparse(target)
+
+    if parsed.scheme or parsed.netloc:
+        return url_for("index")
+
+    if not target.startswith("/") or target.startswith("//"):
+        return url_for("index")
+
+    return target
+
+
 def login_required(function):
     @wraps(function)
     def wrapper(*args, **kwargs):
         if not session.get("user_id"):
             flash("Please login first.", "warning")
-            return redirect(url_for("login"))
+
+            if request.method == "GET":
+                next_url = request.full_path
+
+                if next_url.endswith("?"):
+                    next_url = next_url[:-1]
+            else:
+                next_url = request.referrer or url_for("index")
+
+            return redirect(
+                url_for("login", next=safe_next_url(next_url))
+            )
+
         return function(*args, **kwargs)
+
     return wrapper
 
 
@@ -251,6 +286,7 @@ def index():
 
             if excluded:
                 marks = ",".join("?" for _ in excluded)
+
                 posts = post_query(
                     db,
                     f"posts.user_id NOT IN ({marks})",
@@ -258,7 +294,6 @@ def index():
                 )
             else:
                 posts = post_query(db)
-
         else:
             posts = post_query(db)
 
@@ -280,9 +315,16 @@ def register():
         return redirect(url_for("index"))
 
     if request.method == "POST":
-        username = request.form.get("username", "").strip().lower()
-        email = request.form.get("email", "").strip().lower()
+        username = request.form.get(
+            "username", ""
+        ).strip().lower()
+
+        email = request.form.get(
+            "email", ""
+        ).strip().lower()
+
         password = request.form.get("password", "")
+
         referral_input = request.form.get(
             "referral_code", ""
         ).strip().upper()
@@ -376,7 +418,17 @@ def login():
     if session.get("user_id"):
         return redirect(url_for("index"))
 
+    if request.method == "GET":
+        session["login_next"] = safe_next_url(
+            request.args.get("next", "")
+        )
+
     if request.method == "POST":
+        next_url = safe_next_url(
+            request.form.get("next")
+            or session.get("login_next", "")
+        )
+
         username_or_email = request.form.get(
             "username", ""
         ).strip().lower()
@@ -397,8 +449,9 @@ def login():
         if user and check_password_hash(user["password"], password):
             session.clear()
             session["user_id"] = user["id"]
+
             flash("Welcome to Gadbaddu!", "success")
-            return redirect(url_for("index"))
+            return redirect(next_url)
 
         flash("Incorrect username/email or password.", "danger")
 
@@ -470,10 +523,14 @@ def search():
 @login_required
 def my_profile():
     user = current_user()
-    return redirect(url_for("profile", username=user["username"]))
+
+    return redirect(
+        url_for("profile", username=user["username"])
+    )
 
 
 @app.route("/profile/<username>")
+@login_required
 def profile(username):
     viewer = current_user()
 
@@ -485,14 +542,16 @@ def profile(username):
         if not profile_user:
             abort(404)
 
-        if viewer and blocked_between(
+        if blocked_between(
             db, viewer["id"], profile_user["id"]
         ):
             flash("This profile is unavailable.", "warning")
             return redirect(url_for("index"))
 
         posts = post_query(
-            db, "posts.user_id = ?", (profile_user["id"],)
+            db,
+            "posts.user_id = ?",
+            (profile_user["id"],)
         )
 
         followers = db.execute("""
@@ -505,13 +564,10 @@ def profile(username):
             WHERE follower_id = ?
         """, (profile_user["id"],)).fetchone()["total"]
 
-        is_following = False
-
-        if viewer:
-            is_following = db.execute("""
-                SELECT id FROM follows
-                WHERE follower_id = ? AND following_id = ?
-            """, (viewer["id"], profile_user["id"])).fetchone() is not None
+        is_following = db.execute("""
+            SELECT id FROM follows
+            WHERE follower_id = ? AND following_id = ?
+        """, (viewer["id"], profile_user["id"])).fetchone() is not None
 
     return render_template(
         "profile.html",
@@ -526,22 +582,59 @@ def profile(username):
     )
 
 
-@app.route("/edit-profile", methods=["POST"])
+# --------------------------------------------------
+# EDIT PROFILE
+# --------------------------------------------------
+
+@app.route("/edit-profile", methods=["GET", "POST"])
 @login_required
 def edit_profile():
-    bio = request.form.get("bio", "").strip()[:250]
+    user = current_user()
 
-    with get_db() as db:
-        db.execute(
-            "UPDATE users SET bio = ? WHERE id = ?",
-            (bio, session["user_id"])
+    if request.method == "POST":
+        username = request.form.get(
+            "username", ""
+        ).strip().lower()
+
+        bio = request.form.get(
+            "bio", ""
+        ).strip()[:250]
+
+        if not re.fullmatch(r"[a-z0-9_]{3,20}", username):
+            flash(
+                "Username must be 3-20 characters and use only letters, numbers or underscore.",
+                "danger"
+            )
+            return redirect(url_for("edit_profile"))
+
+        with get_db() as db:
+            existing = db.execute(
+                "SELECT id FROM users WHERE username = ? AND id != ?",
+                (username, session["user_id"])
+            ).fetchone()
+
+            if existing:
+                flash("That username is already taken.", "danger")
+                return redirect(url_for("edit_profile"))
+
+            db.execute(
+                "UPDATE users SET username = ?, bio = ? WHERE id = ?",
+                (username, bio, session["user_id"])
+            )
+
+        flash("Profile updated successfully.", "success")
+
+        return redirect(
+            url_for("profile", username=username)
         )
 
-    flash("Profile updated.", "success")
-    return redirect(url_for("my_profile"))
-
-
-# --------------------------------------------------
+    return render_template(
+        "edit_profile.html",
+        user=user,
+        current_user=user,
+        profile_user=user
+    )
+    # --------------------------------------------------
 # FOLLOW / UNFOLLOW
 # --------------------------------------------------
 
@@ -584,6 +677,7 @@ def follow(username):
                     (follower_id, following_id, created_at)
                     VALUES (?, ?, ?)
                 """, (my_id, target_id, now()))
+
                 flash("You are now following this user.", "success")
 
     return redirect(url_for("profile", username=username))
@@ -598,7 +692,9 @@ def follow(username):
 def upload():
     if request.method == "POST":
         file = request.files.get("media")
-        caption = request.form.get("caption", "").strip()[:2000]
+        caption = request.form.get(
+            "caption", ""
+        ).strip()[:2000]
 
         if not file or not file.filename:
             flash("Please select an image or video.", "danger")
@@ -625,6 +721,7 @@ def upload():
             return redirect(url_for("upload"))
 
         filename = f"{secrets.token_hex(16)}_{safe_name}"
+
         save_path = UPLOAD_DIR / filename
         file.save(save_path)
 
@@ -656,7 +753,8 @@ def upload():
 def like(post_id):
     with get_db() as db:
         post = db.execute(
-            "SELECT id FROM posts WHERE id = ?", (post_id,)
+            "SELECT id FROM posts WHERE id = ?",
+            (post_id,)
         ).fetchone()
 
         if not post:
@@ -668,7 +766,10 @@ def like(post_id):
         """, (session["user_id"], post_id)).fetchone()
 
         if existing:
-            db.execute("DELETE FROM likes WHERE id = ?", (existing["id"],))
+            db.execute(
+                "DELETE FROM likes WHERE id = ?",
+                (existing["id"],)
+            )
         else:
             db.execute("""
                 INSERT INTO likes (user_id, post_id, created_at)
@@ -685,15 +786,21 @@ def like(post_id):
 @app.route("/comment/<int:post_id>", methods=["POST"])
 @login_required
 def comment(post_id):
-    comment_text = request.form.get("comment", "").strip()
+    comment_text = request.form.get(
+        "comment", ""
+    ).strip()
 
     if not comment_text or len(comment_text) > 1000:
-        flash("Comment must be between 1 and 1000 characters.", "warning")
+        flash(
+            "Comment must be between 1 and 1000 characters.",
+            "warning"
+        )
         return redirect(request.referrer or url_for("index"))
 
     with get_db() as db:
         post = db.execute(
-            "SELECT id FROM posts WHERE id = ?", (post_id,)
+            "SELECT id FROM posts WHERE id = ?",
+            (post_id,)
         ).fetchone()
 
         if not post:
@@ -702,9 +809,15 @@ def comment(post_id):
         db.execute("""
             INSERT INTO comments (user_id, post_id, comment, created_at)
             VALUES (?, ?, ?, ?)
-        """, (session["user_id"], post_id, comment_text, now()))
+        """, (
+            session["user_id"],
+            post_id,
+            comment_text,
+            now()
+        ))
 
     flash("Comment added.", "success")
+
     return redirect(request.referrer or url_for("index"))
 
 
@@ -764,16 +877,26 @@ def chat(username):
             return redirect(url_for("messages"))
 
         if request.method == "POST":
-            message_text = request.form.get("message", "").strip()
+            message_text = request.form.get(
+                "message", ""
+            ).strip()
 
             if not message_text or len(message_text) > 2000:
-                flash("Message must be between 1 and 2000 characters.", "warning")
+                flash(
+                    "Message must be between 1 and 2000 characters.",
+                    "warning"
+                )
             else:
                 db.execute("""
                     INSERT INTO messages
                     (sender_id, receiver_id, message, created_at)
                     VALUES (?, ?, ?, ?)
-                """, (my_id, other_id, message_text, now()))
+                """, (
+                    my_id,
+                    other_id,
+                    message_text,
+                    now()
+                ))
 
                 return redirect(
                     url_for("chat", username=username)
@@ -789,7 +912,12 @@ def chat(username):
                 (messages.sender_id = ? AND messages.receiver_id = ?)
             ORDER BY messages.id ASC
             LIMIT 300
-        """, (my_id, other_id, other_id, my_id)).fetchall()
+        """, (
+            my_id,
+            other_id,
+            other_id,
+            my_id
+        )).fetchall()
 
     return render_template(
         "messages.html",
@@ -808,14 +936,17 @@ def chat(username):
 @app.route("/report/<int:post_id>", methods=["POST"])
 @login_required
 def report_post(post_id):
-    reason = request.form.get("reason", "").strip()[:500]
+    reason = request.form.get(
+        "reason", ""
+    ).strip()[:500]
 
     if not reason:
         reason = "User reported this post"
 
     with get_db() as db:
         post = db.execute(
-            "SELECT id FROM posts WHERE id = ?", (post_id,)
+            "SELECT id FROM posts WHERE id = ?",
+            (post_id,)
         ).fetchone()
 
         if not post:
@@ -824,9 +955,15 @@ def report_post(post_id):
         db.execute("""
             INSERT INTO reports (reporter_id, post_id, reason, created_at)
             VALUES (?, ?, ?, ?)
-        """, (session["user_id"], post_id, reason, now()))
+        """, (
+            session["user_id"],
+            post_id,
+            reason,
+            now()
+        ))
 
     flash("Report submitted for review.", "success")
+
     return redirect(request.referrer or url_for("index"))
 
 
@@ -885,10 +1022,11 @@ def unblock_user(username):
             """, (session["user_id"], target["id"]))
 
     flash("User unblocked.", "success")
-    return redirect(url_for("profile", username=username))
 
-
-# --------------------------------------------------
+    return redirect(
+        url_for("profile", username=username)
+    )
+    # --------------------------------------------------
 # REFERRAL / POINTS
 # --------------------------------------------------
 
@@ -899,7 +1037,8 @@ def referrals():
 
     with get_db() as db:
         user = db.execute(
-            "SELECT * FROM users WHERE id = ?", (my_id,)
+            "SELECT * FROM users WHERE id = ?",
+            (my_id,)
         ).fetchone()
 
         referral_list = db.execute("""
@@ -928,6 +1067,69 @@ def referrals():
 
 
 # --------------------------------------------------
+# SETTINGS
+# --------------------------------------------------
+
+@app.route("/settings")
+@login_required
+def settings():
+    user = current_user()
+
+    return render_template(
+        "settings.html",
+        user=user,
+        current_user=user
+    )
+
+
+# --------------------------------------------------
+# NOTIFICATIONS
+# --------------------------------------------------
+
+@app.route("/notifications")
+@login_required
+def notifications():
+    user = current_user()
+
+    return render_template(
+        "notifications.html",
+        notifications=[],
+        user=user,
+        current_user=user
+    )
+
+
+# --------------------------------------------------
+# TERMS AND CONDITIONS
+# --------------------------------------------------
+
+@app.route("/terms")
+def terms():
+    user = current_user()
+
+    return render_template(
+        "terms.html",
+        user=user,
+        current_user=user
+    )
+
+
+# --------------------------------------------------
+# PRIVACY POLICY
+# --------------------------------------------------
+
+@app.route("/privacy")
+def privacy():
+    user = current_user()
+
+    return render_template(
+        "privacy.html",
+        user=user,
+        current_user=user
+    )
+
+
+# --------------------------------------------------
 # ERROR HANDLERS
 # --------------------------------------------------
 
@@ -938,8 +1140,14 @@ def page_not_found(error):
 
 @app.errorhandler(413)
 def file_too_large(error):
-    flash("File is too large. Maximum size is 25 MB.", "danger")
-    return redirect(request.referrer or url_for("index"))
+    flash(
+        "File is too large. Maximum size is 25 MB.",
+        "danger"
+    )
+
+    return redirect(
+        request.referrer or url_for("index")
+    )
 
 
 @app.errorhandler(500)
@@ -952,6 +1160,7 @@ def server_error(error):
 # --------------------------------------------------
 
 init_db()
+
 
 if __name__ == "__main__":
     app.run(debug=False)
